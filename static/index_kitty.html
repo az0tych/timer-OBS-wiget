@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello Kitty Timer</title>
+  <style>
+    /* Добавленные стили для заголовка */
+    .donatophone-title {
+      font-size: 3.2rem;
+      color: #ff1493;
+      text-shadow:
+
+        3px 3px 6px rgba(255, 105, 180, 0.5);
+      text-align: center;
+      margin-bottom: 0.6rem;
+      font-family: 'Comic Sans MS', sans-serif;
+      font-weight: bold;
+      letter-spacing: -1px;
+      -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.8);
+      animation: pulse 4s infinite alternate;
+    }
+
+    /* Анимация пульсации для заголовка */
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
+    }
+
+    body {
+      margin: 0;
+      background-color: #ffd3e6;
+      display: flex;
+      flex-direction: column; /* Изменено на вертикальное расположение */
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Контейнер таймера и картинок */
+    .kitty-container {
+      display: inline-flex;
+      align-items: center;
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,182,193,0.12) 100%);
+      border-radius: 3rem;
+      border: 0.3rem solid #ffb6c1;
+      box-shadow:
+        0 0 2rem rgba(255,105,180,0.3),
+        0 0 1rem rgba(255,182,193,0.2);
+      box-sizing: border-box;
+      max-width: max-content;
+    }
+
+    /* Изображения китти */
+    .kitty-img {
+      flex-shrink: 0;
+      max-height: 7rem;
+      height: auto;
+      animation: float 3s ease-in-out infinite;
+      margin: 0;
+    }
+    .kitty-left { animation-delay: 0.5s; }
+    .kitty-right { animation-delay: 1s; }
+
+    /* Секция таймера */
+    #timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem; /* Зазор между сегментами таймера */
+      margin: 0 0.5rem; /* Небольшие отступы внутри контейнера */
+      flex-grow: 1;
+    }
+
+    /* Отдельный сегмент времени */
+    .time-segment {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+    }
+    .value {
+      font-size: 5rem;
+      line-height: 1;
+      color: #ff1493;
+      text-shadow: 2px 2px 0 #ffb6c1;
+       display: inline-block;
+      width: 2ch;
+      text-align: center;
+      /* табличные цифры одинаковой ширины */
+      font-variant-numeric: tabular-nums;
+    }
+    .label {
+      margin-top: 0;
+      line-height: 1;
+      font-size: 2.8rem;
+      color: #333;
+      font-weight: bold;
+      /* Обводка и тень для улучшенной читабельности */
+      -webkit-text-stroke: 0.5px rgba(255,255,255,0.8);
+      text-shadow:
+        1px 1px 2px rgba(0, 0, 0, 0.4),
+        0 0 4px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Адаптив для мобильных */
+    @media (max-width: 600px) {
+      .kitty-img { max-height: 4rem; }
+      .value { font-size: 3.5rem; }
+      .label { font-size: 1.4rem; }
+    }
+
+    /* Анимация парения */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* Адаптивность для заголовка */
+    @media (max-width: 600px) {
+      .donatophone-title {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .kitty-img { max-height: 4rem; }
+      .value { font-size: 3.5rem; }
+      .label { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="donatophone-title">До конца донатофона:</div>
+  <div class="kitty-container">
+    <img src="/static/hello_kitty_left.png" class="kitty-img kitty-left" alt="Hello Kitty Left">
+    <div id="timer">
+      <div class="time-segment">
+        <span class="value" id="days">00</span>
+        <span class="label">дни</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="hours">00</span>
+        <span class="label">час</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="minutes">00</span>
+        <span class="label">мин</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="seconds">00</span>
+        <span class="label">сек</span>
+      </div>
+    </div>
+    <img src="/static/hello_kitty_right.png" class="kitty-img kitty-right" alt="Hello Kitty Right">
+  </div>
+
+  <script>
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+
+    ws.onmessage = evt => {
+      const { seconds } = JSON.parse(evt.data);
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+
+      daysEl.textContent = String(d).padStart(2, '0');
+      hoursEl.textContent = String(h).padStart(2, '0');
+      minutesEl.textContent = String(m).padStart(2, '0');
+      secondsEl.textContent = String(s).padStart(2, '0');
+    };
+  </script>
+</body>
+</html>

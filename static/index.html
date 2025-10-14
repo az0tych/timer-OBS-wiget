@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timer</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0f0f1f;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #14fbfa;
+      overflow: hidden;
+    }
+
+    .donatophone-title {
+      font-size: 3.2rem;
+      color: #14fbfa;
+      text-align: center;
+      margin-bottom: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-shadow:
+        0 0 6px #14fbfa,
+        0 0 12px #472efb;
+      animation: pulse 4s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.02); }
+    }
+
+    .kitty-container {
+      display: inline-flex;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, rgba(46, 0, 113, 0.9), rgba(0, 111, 110, 0.8));
+      border-radius: 2rem;
+      border: 0.4rem solid #472efb;
+      box-shadow:
+        0 0 15px #472efb88,
+        0 0 30px #b017fd55 inset;
+      max-width: max-content;
+    }
+
+    .kitty-img {
+      flex-shrink: 0;
+      max-height: 7rem;
+      height: auto;
+      animation: float 4s ease-in-out infinite;
+      margin: 0;
+      filter: drop-shadow(0 0 5px #14fbfa);
+    }
+
+    .kitty-left { animation-delay: 0.5s; }
+    .kitty-right { animation-delay: 1s; }
+
+    #timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      margin: 0 1rem;
+      flex-grow: 1;
+    }
+
+    .time-segment {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .value {
+      font-size: 5rem;
+      line-height: 1;
+      font-weight: bold;
+      color: #14fbfa;
+      text-shadow:
+        0 0 6px #14fbfa,
+        0 0 8px #b017fd;
+      display: inline-block;
+      width: 2ch;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .label {
+      margin: 0;
+      line-height: 1;
+      font-size: 2.6rem;
+      color: #ffffffcc;
+      font-weight: bold;
+      text-shadow:
+        0 0 3px #472efb,
+        0 0 6px #b017fd88;
+    }
+
+    @media (max-width: 600px) {
+      .kitty-img { max-height: 4rem; }
+      .value { font-size: 3.5rem; }
+      .label { font-size: 1.4rem; }
+      .donatophone-title { font-size: 2.2rem; margin-bottom: 1rem; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="donatophone-title">До конца донатофона:</div>
+  <div class="kitty-container">
+    <img src="/static/skull_left.png" class="kitty-img kitty-left" alt="Skull Left">
+    <div id="timer">
+      <div class="time-segment">
+        <span class="value" id="days">00</span>
+        <span class="label">дни</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="hours">00</span>
+        <span class="label">час</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="minutes">00</span>
+        <span class="label">мин</span>
+      </div>
+      <div class="time-segment">
+        <span class="value" id="seconds">00</span>
+        <span class="label">сек</span>
+      </div>
+    </div>
+    <img src="/static/skull_right.png" class="kitty-img kitty-right" alt="Skull Right">
+  </div>
+
+  <script>
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+
+    ws.onmessage = evt => {
+      const { seconds } = JSON.parse(evt.data);
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+
+      daysEl.textContent = String(d).padStart(2, '0');
+      hoursEl.textContent = String(h).padStart(2, '0');
+      minutesEl.textContent = String(m).padStart(2, '0');
+      secondsEl.textContent = String(s).padStart(2, '0');
+    };
+  </script>
+</body>
+</html>

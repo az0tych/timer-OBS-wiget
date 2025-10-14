@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>OBS Timer Widget</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #2ecc71; /* зелёный фон */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+    #timer {
+      font-size: 5rem;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="timer">00:00:00:00</div>
+
+  <script>
+    const timerEl = document.getElementById('timer');
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+
+    function formatTime(sec) {
+      const days    = Math.floor(sec / 86400);
+      const hours   = Math.floor((sec % 86400) / 3600);
+      const minutes = Math.floor((sec % 3600) / 60);
+      const seconds = sec % 60;
+
+      const d = String(days).padStart(2, '0');
+      const h = String(hours).padStart(2, '0');
+      const m = String(minutes).padStart(2, '0');
+      const s = String(seconds).padStart(2, '0');
+
+      return `${d}:${h}:${m}:${s}`;
+    }
+
+    ws.onmessage = evt => {
+      const { seconds } = JSON.parse(evt.data);
+      timerEl.textContent = formatTime(seconds);
+    };
+
+  </script>
+</body>
+</html>
